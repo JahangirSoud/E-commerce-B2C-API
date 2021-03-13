@@ -1,31 +1,28 @@
 <?php
-namespace App\Http\Controllers;
-use App\Models\brand;
-use Illuminate\Http\Request;
-use App\Repositories\bandRepositories;
-use Image;
-use Illuminate\Support\Facades\File;
-use DB;
 
-class BrandController extends Controller
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+class SubcategorysController extends Controller
 {
-	public function __construct(bandRepositories $bandRepositories){
-		$this->bandRepositories=$bandRepositories;
+    public function __construct(subcategorysRepositories $subcategorysRepositories){
+		$this->subcategorysRepositories=$subcategorysRepositories;
 	}
 
      public function index(){
-     	$brand= $this->bandRepositories->getAll();
+     	$subcategory= $this->subcategorysRepositories->getAll();
      	return response()->json([
      		'success'=>true,
      		'message'=>'Band List',
-     		'data'=>$brand,
+     		'data'=>$subcategory,
      	],201);
 
      }
 
      public function show($id){
-			$brand = $this->bandRepositories->findbyId($id);
-			if(is_null($brand)){
+			$subcategory = $this->subcategorysRepositories->findbyId($id);
+			if(is_null($subcategory)){
 				return response()->json([
 						'success'=>false,
 						'message'=>'No data found',
@@ -35,7 +32,7 @@ class BrandController extends Controller
 				return response()->json([
 						'success'=>true,
 						'message'=>'Searching Data',
-						'date'=>$brand,
+						'date'=>$subcategory,
 					],201);
 			}
 
@@ -43,9 +40,9 @@ class BrandController extends Controller
 	public function store(Request $request){
 		$formData = $request->all();
 		$validator= \Validator::make($formData,[
-			'brand_name'=> 'required',
-			'description' => 'required',
-			'brand_image'=>'required|image:jpeg,png,jpg,gif,svg|max:2048',
+			'subcategory_name'=> 'required',
+            'category_id'=> 'required',
+			'subcategory_image'=>'required|image:jpeg,png,jpg,gif,svg|max:2048',
 		]);
 		if ($validator->fails()) {
             return response()->json([
@@ -55,14 +52,14 @@ class BrandController extends Controller
             ]);
         }
         $img='';
-		if ($request->hasFile('brand_image')) {
-			$image = $request->file('brand_image');
+		if ($request->hasFile('subcategory_image')) {
+			$image = $request->file('subcategory_image');
     	    $img = time() . '.'. $image->getClientOriginalExtension();
-			$location = public_path('images/brands/' .$img);
+			$location = public_path('images/subcategorys/' .$img);
 			Image::make($image)->save($location);
 
 		}
-		$data_store=$this->bandRepositories->create($request,$img);
+		$data_store=$this->subcategorysRepositories->create($request,$img);
 		return response()->json([
 			'success'=>true,
 			'message'=>'Brand Save',
@@ -73,7 +70,7 @@ class BrandController extends Controller
 	public function update(Request $request, $id)
     {
     	$formData=$request->all();
-        $brand = $this->bandRepositories->findbyId($id);
+        $subcategory = $this->subcategorysRepositories->findbyId($id);
         if (is_null($brand)) {
             return response()->json([
                 'success' => false,
@@ -83,9 +80,9 @@ class BrandController extends Controller
         }
 
         $validator= \Validator::make($formData,[
-			'brand_name'=> 'required',
-			'description' => 'required',
-			'brand_image'=>'required|image:jpeg,png,jpg,gif,svg|max:2048',
+			'subcategory_name'=> 'required',
+            'category_id'=> 'required',
+			'subcategory_image'=>'required|image:jpeg,png,jpg,gif,svg|max:2048',
 			'old_image_path'=> 'required',
 		]);
 		if ($validator->fails()) {
@@ -97,30 +94,30 @@ class BrandController extends Controller
         }
         
 
-		$image_path = public_path('images/brands/' .$request->old_image_path);
+		$image_path = public_path('images/subcategorys/' .$request->old_image_path);
     	if (File::exists($image_path)) {
         	unlink($image_path);
     	}
 
       	$img='';
-		if ($request->hasFile('brand_image')) {
-			$image = $request->file('brand_image');
+		if ($request->hasFile('subcategory_image')) {
+			$image = $request->file('subcategory_image');
     	    $img = time() . '.'. $image->getClientOriginalExtension();
-			$location = public_path('images/brands/' .$img);
+			$location = public_path('images/subcategorys/' .$img);
 			Image::make($image)->save($location);
 
 		}
-        $brand = $this->bandRepositories->edit($request, $id,$img);
+        $subcategory = $this->subcategorysRepositories->edit($request, $id,$img);
         return response()->json([
             'success' => true,
             'message' => 'Project Updated',
-            'data'    => $brand
+            'data'    => $subcategory
         ]);
     }
     public function destroy($id)
     {
-    	$brand = $this->bandRepositories->findbyId($id);
-        if (is_null($brand)) {
+    	$subcategory = $this->subcategorysRepositories->findbyId($id);
+        if (is_null($subcategory)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Brand not found',
@@ -128,18 +125,17 @@ class BrandController extends Controller
             ]);
         }
         
-        $image = DB::table('brands')->where('id', $id)->value('brand_image');
-        $image_path = public_path('images/brands/' .$image);
+        $image = DB::table('subcategorys')->where('id', $id)->value('subcategory_image');
+        $image_path = public_path('images/subcategorys/' .$image);
     	if (File::exists($image_path)) {
         	unlink($image_path);
     	}
 
-        $project = $this->bandRepositories->destory($id);
+        $subcategory = $this->subcategorysRepositories->destory($id);
         return response()->json([
                 'success' => true,
                 'message' => 'Brand Delete'
             ]);
 
     }
-        
 }

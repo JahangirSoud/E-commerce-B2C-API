@@ -1,31 +1,31 @@
 <?php
 namespace App\Http\Controllers;
-use App\Models\brand;
+use App\Models\categorys;
 use Illuminate\Http\Request;
-use App\Repositories\bandRepositories;
+use App\Repositories\categorysRepositories;
 use Image;
 use Illuminate\Support\Facades\File;
 use DB;
 
-class BrandController extends Controller
+class CategorysController extends Controller
 {
-	public function __construct(bandRepositories $bandRepositories){
-		$this->bandRepositories=$bandRepositories;
+    public function __construct(categorysRepositories $categorysRepositories){
+		$this->categorysRepositories=$categorysRepositories;
 	}
 
      public function index(){
-     	$brand= $this->bandRepositories->getAll();
+     	$category= $this->categorysRepositories->getAll();
      	return response()->json([
      		'success'=>true,
      		'message'=>'Band List',
-     		'data'=>$brand,
+     		'data'=>$category,
      	],201);
 
      }
 
      public function show($id){
-			$brand = $this->bandRepositories->findbyId($id);
-			if(is_null($brand)){
+			$category = $this->categorysRepositories->findbyId($id);
+			if(is_null($category)){
 				return response()->json([
 						'success'=>false,
 						'message'=>'No data found',
@@ -35,7 +35,7 @@ class BrandController extends Controller
 				return response()->json([
 						'success'=>true,
 						'message'=>'Searching Data',
-						'date'=>$brand,
+						'date'=>$category,
 					],201);
 			}
 
@@ -43,9 +43,8 @@ class BrandController extends Controller
 	public function store(Request $request){
 		$formData = $request->all();
 		$validator= \Validator::make($formData,[
-			'brand_name'=> 'required',
-			'description' => 'required',
-			'brand_image'=>'required|image:jpeg,png,jpg,gif,svg|max:2048',
+			'category_name'=> 'required',
+			'category_image'=>'required|image:jpeg,png,jpg,gif,svg|max:2048',
 		]);
 		if ($validator->fails()) {
             return response()->json([
@@ -55,14 +54,14 @@ class BrandController extends Controller
             ]);
         }
         $img='';
-		if ($request->hasFile('brand_image')) {
-			$image = $request->file('brand_image');
+		if ($request->hasFile('category_image')) {
+			$image = $request->file('category_image');
     	    $img = time() . '.'. $image->getClientOriginalExtension();
-			$location = public_path('images/brands/' .$img);
+			$location = public_path('images/categorys/' .$img);
 			Image::make($image)->save($location);
 
 		}
-		$data_store=$this->bandRepositories->create($request,$img);
+		$data_store=$this->categorysRepositories->create($request,$img);
 		return response()->json([
 			'success'=>true,
 			'message'=>'Brand Save',
@@ -73,7 +72,7 @@ class BrandController extends Controller
 	public function update(Request $request, $id)
     {
     	$formData=$request->all();
-        $brand = $this->bandRepositories->findbyId($id);
+        $category = $this->categorysRepositories->findbyId($id);
         if (is_null($brand)) {
             return response()->json([
                 'success' => false,
@@ -83,9 +82,8 @@ class BrandController extends Controller
         }
 
         $validator= \Validator::make($formData,[
-			'brand_name'=> 'required',
-			'description' => 'required',
-			'brand_image'=>'required|image:jpeg,png,jpg,gif,svg|max:2048',
+			'category_name'=> 'required',
+			'category_image'=>'required|image:jpeg,png,jpg,gif,svg|max:2048',
 			'old_image_path'=> 'required',
 		]);
 		if ($validator->fails()) {
@@ -97,30 +95,30 @@ class BrandController extends Controller
         }
         
 
-		$image_path = public_path('images/brands/' .$request->old_image_path);
+		$image_path = public_path('images/categorys/' .$request->old_image_path);
     	if (File::exists($image_path)) {
         	unlink($image_path);
     	}
 
       	$img='';
-		if ($request->hasFile('brand_image')) {
-			$image = $request->file('brand_image');
+		if ($request->hasFile('category_image')) {
+			$image = $request->file('category_image');
     	    $img = time() . '.'. $image->getClientOriginalExtension();
-			$location = public_path('images/brands/' .$img);
+			$location = public_path('images/categorys/' .$img);
 			Image::make($image)->save($location);
 
 		}
-        $brand = $this->bandRepositories->edit($request, $id,$img);
+        $category = $this->categorysRepositories->edit($request, $id,$img);
         return response()->json([
             'success' => true,
             'message' => 'Project Updated',
-            'data'    => $brand
+            'data'    => $category
         ]);
     }
     public function destroy($id)
     {
-    	$brand = $this->bandRepositories->findbyId($id);
-        if (is_null($brand)) {
+    	$category = $this->categorysRepositories->findbyId($id);
+        if (is_null($category)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Brand not found',
@@ -128,18 +126,17 @@ class BrandController extends Controller
             ]);
         }
         
-        $image = DB::table('brands')->where('id', $id)->value('brand_image');
-        $image_path = public_path('images/brands/' .$image);
+        $image = DB::table('categorys')->where('id', $id)->value('category_image');
+        $image_path = public_path('images/categorys/' .$image);
     	if (File::exists($image_path)) {
         	unlink($image_path);
     	}
 
-        $project = $this->bandRepositories->destory($id);
+        $project = $this->categorysRepositories->destory($id);
         return response()->json([
                 'success' => true,
                 'message' => 'Brand Delete'
             ]);
 
     }
-        
 }
